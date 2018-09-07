@@ -1,0 +1,42 @@
+{
+  "name": "ytake/hackdotenv",
+  "description": "",
+  "minimum-stability": "stable",
+  "type": "library",
+  "license": "MIT",
+  "keywords": [
+    "hack",
+    "hhvm",
+    "dotenv",
+    "env"
+  ],
+  "authors": [
+    {
+      "name": "Yuuki Takezawa",
+      "email": "yuuki.takezawa@comnect.jp.net"
+    }
+  ],
+  "require": {
+    "hhvm": ">=3.28.0",
+    "hhvm/hhvm-autoload": "^1.6",
+    "hhvm/hsl": ">=3.28.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^5.0",
+    "91carriage/phpunit-hhi": "^5.7.1",
+    "hhvm/hhast": ">=3.28.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Ytake\\Dotenv\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "classmap": [
+      "tests/"
+    ]
+  },
+  "scripts": {
+    "test": "./vendor/bin/phpunit"
+  }
+}
