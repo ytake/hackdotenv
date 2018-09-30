@@ -3,15 +3,15 @@
 namespace Ytake\Dotenv;
 
 use type Ytake\Dotenv\Exception\InvalidPathException;
+use type Ytake\Dotenv\Sanitize\SanitizeName;
+use type Ytake\Dotenv\Sanitize\SanitizeValue;
 
-use function is_string;
 use function rtrim;
 
 use const DIRECTORY_SEPARATOR;
 
+<<__ConsistentConstruct>>
 class Dotenv {
-
-  protected string $filePath;
 
   protected Loader $loader;
 
@@ -19,8 +19,12 @@ class Dotenv {
     string $path,
     string $file = '.env'
   ) {
-    $this->filePath = $this->getFilePath($path, $file);
-    $this->loader = new Loader($this->filePath, true);
+    $this->loader = new Loader(
+      $this->getFilePath($path, $file),
+      new SanitizeName(),
+      new SanitizeValue()
+    );
+    $this->loader->setImmutable(true);
   }
 
   public function load(): ImmMap<int, string> {

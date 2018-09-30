@@ -1,0 +1,13 @@
+language: php
+sudo: required
+dist: trusty
+php:
+ - hhvm-3.28
+ - hhvm
+ - hhvm-nightly
+
+install: composer install
+
+script:
+ - hh_client
+ - hhvm vendor/bin/hacktest tests/

@@ -1,12 +1,15 @@
 <?hh // strict
 
 use type Ytake\Dotenv\Loader;
-use type PHPUnit\Framework\TestCase;
+use type Facebook\HackTest\HackTest;
+use type Ytake\Dotenv\Sanitize\SanitizeName;
+use type Ytake\Dotenv\Sanitize\SanitizeValue;
 
 use function dirname;
 use function getenv;
+use function Facebook\FBExpect\expect;
 
-final class LoaderTest extends TestCase {
+final class LoaderTest extends HackTest {
 
   private ?Loader $immutableLoader;
 
@@ -15,20 +18,22 @@ final class LoaderTest extends TestCase {
   protected Map<string, string> $keyVal = Map{};
 
   <<__Override>>
-  protected function setUp(): void {
+  public async function beforeEachTestAsync(): Awaitable<void> {
     $folder = dirname(__DIR__) . '/resources';
     $this->keyVal(true);
-    $this->mutableLoader = new Loader($folder);
-    $this->immutableLoader = new Loader($folder, true);
+    $this->mutableLoader = $this->muLoader($folder);
+    $this->immutableLoader = $this->immLoader($folder);
   }
 
   private function muLoader(string $folder): Loader {
-    return new Loader($folder);
+    return new Loader($folder, new SanitizeName(), new SanitizeValue());
   }
 
-private function immLoader(string $folder): Loader {
-  return new Loader($folder, true);
-}
+  private function immLoader(string $folder): Loader {
+    $l = new Loader($folder, new SanitizeName(), new SanitizeValue());
+    $l->setImmutable(true);
+    return $l;
+  }
 
   protected function keyVal(bool $reset = false): Map<string, string> {
     if ($this->keyVal->count() !== 0 || $reset) {
@@ -53,9 +58,9 @@ private function immLoader(string $folder): Loader {
     $immutable = $loader->getImmutable();
     $loader->setImmutable(true);
     $loader->setImmutable(!$immutable);
-    $this->assertSame(!$immutable, $loader->getImmutable());
+    expect($loader->getImmutable())->toBeSame(!$immutable);
     $loader->setImmutable($immutable);
-    $this->assertSame($immutable, $loader->getImmutable());
+    expect($loader->getImmutable())->toBeSame($immutable);
   }
 
   public function testMutableLoaderClearsEnvironmentVars(): void {
@@ -66,10 +71,10 @@ private function immLoader(string $folder): Loader {
     if ($k is string && $v is string) {
       $loader->setEnvironmentVariable($k, $v);
       $loader->clearEnvironmentVariable($k);
-      $this->assertSame(null, $loader->getEnvironmentVariable($k));
-      $this->assertSame(false, getenv($this->key()));
-      $this->assertInstanceOf(Vector::class, $loader->variableVec());
-      $this->assertNotCount(0, $loader->variableVec());
+      expect($loader->getEnvironmentVariable($k))->toBeNull();
+      expect(getenv($this->key()))->toBeFalse();
+      expect($loader->variableVec())->toBeInstanceOf(Vector::class);
+      expect($loader->variableVec())->toNotBeSame(0);
     }
   }
 
@@ -80,9 +85,9 @@ private function immLoader(string $folder): Loader {
     $immLoader = $this->immutableLoader;
     invariant($immLoader instanceof Loader, 'error');
     $immLoader->setImmutable(!$immutable);
-    $this->assertSame(!$immutable, $immLoader->getImmutable());
+    expect($immLoader->getImmutable())->toBeSame(!$immutable);
     $immLoader->setImmutable($immutable);
-    $this->assertSame($immutable, $immLoader->getImmutable());
+    expect($immLoader->getImmutable())->toBeSame($immutable);
   }
 
   public function testImmutableLoaderCannotClearEnvironmentVars(): void {
@@ -93,10 +98,10 @@ private function immLoader(string $folder): Loader {
     if ($k is string && $v is string) {
       $immLoader->setEnvironmentVariable($k, $v);
       $immLoader->clearEnvironmentVariable($k);
-      $this->assertSame($v, $immLoader->getEnvironmentVariable($k));
-      $this->assertSame($v, getenv($k));
-      $this->assertInstanceOf(Vector::class, $immLoader->variableVec());
-      $this->assertNotCount(0, $immLoader->variableVec()); 
+      expect($immLoader->getEnvironmentVariable($k))->toBeSame($v);
+      expect(getenv($k))->toBeSame($v);
+      expect($immLoader->variableVec())->toBeInstanceOf(Vector::class);
+      expect($immLoader->variableVec())->toNotBeSame(0);
     }
   }
 }

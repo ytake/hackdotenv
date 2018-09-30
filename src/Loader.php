@@ -2,8 +2,9 @@
 
 namespace Ytake\Dotenv;
 
-use type Ytake\Dotenv\Exception\InvalidFileException;
 use type Ytake\Dotenv\Exception\InvalidPathException;
+use type Ytake\Dotenv\Sanitize\SanitizeName;
+use type Ytake\Dotenv\Sanitize\SanitizeValue;
 
 use function is_readable;
 use function is_file;
@@ -18,9 +19,7 @@ use function strpos;
 use function explode;
 use function trim;
 use function strval;
-use function preg_match;
-use function preg_replace;
-use function str_replace;
+use function getenv;
 use function preg_replace_callback;
 use function function_exists;
 use function putenv;
@@ -30,22 +29,24 @@ use const FILE_SKIP_EMPTY_LINES;
 
 class Loader {
 
-  protected Vector<string> $variableNames = Vector{};
+  protected Vector<string> $vn = Vector{};
+  protected bool $imm = false;
 
   public function __construct(
     protected string $filePath,
-    protected bool $immutable = false
+    protected SanitizeName $sn,
+    protected SanitizeValue $sv
   ) {}
 
   public function setImmutable(
     bool $immutable = false
   ): this {
-    $this->immutable = $immutable;
+    $this->imm = $immutable;
     return $this;
   }
 
   public function getImmutable(): bool {
-    return $this->immutable;
+    return $this->imm;
   }
 
   public function load(): ImmMap<int, string> {
@@ -70,20 +71,18 @@ class Loader {
 
   protected function normaliseEnvironmentVariable(string $name, string $value): (string, string) {
     list($name, $value) = $this->processFilters($name, $value);
-    $value = $this->resolveNestedVariables($value);
-    return tuple($name, $value);
+    return tuple($name, $this->resolveNestedVariables($value));
   }
 
   public function processFilters(string $name, string $value): (string, string) {
     list($name, $value) = $this->splitCompoundStringIntoParts($name, $value);
-    list($name, $value) = $this->sanitiseVariableName($name, $value);
-    list($name, $value) = $this->sanitiseVariableValue($name, $value);
+    list($name, $value) = $this->sn->sanitize($name, $value);
+    list($name, $value) = $this->sv->sanitize($name, $value);
 
     return tuple($name, $value);
   }
 
   protected function readLinesFromFile(string $filePath): array<int, string> {
-    // Read file into an array of lines with auto-detected line endings
     $autodetect = ini_get('auto_detect_line_endings');
     ini_set('auto_detect_line_endings', '1');
     $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -113,49 +112,6 @@ class Loader {
     return tuple(strval($name), strval($value));
   }
 
-  protected function sanitiseVariableValue(
-    string $name,
-    string $value
-  ): (string, string) {
-    $value = trim($value);
-    if (!$value) {
-      return tuple($name, $value);
-    }
-    if ($this->beginsWithAQuote($value)) {
-      $quote = $value;
-      $regexPattern = sprintf(
-        '/^
-        %s           # match a quote at the start of the value
-          (              # capturing sub-pattern used
-            (?:           # we do not need to capture this
-              [^%s\\\\]* # any character other than a quote or backslash
-              |\\\\\\\\    # or two backslashes together
-              |\\\\%s    # or an escaped quote e.g \"
-            )*            # as many characters that match the previous rules
-          )              # end of the capturing sub-pattern
-        %s           # and the closing quote
-        .*$            # and discard any string after the closing quote
-        /mx',
-        $quote,
-        $quote,
-        $quote,
-        $quote
-      );
-      $value = preg_replace($regexPattern, '$1', $value);
-      $value = str_replace("\\$quote", $quote, $value);
-      return tuple($name, str_replace('\\\\', '\\', $value));
-    }
-    $parts = explode(' #', $value, 2);
-    $value = trim($parts[0]);
-    if (preg_match('/\s+/', $value) > 0) {
-      if (preg_match('/^#/', $value) > 0) {
-        $value = '';
-      }
-      throw new InvalidFileException('Dotenv values containing spaces must be surrounded by quotes.');
-    }
-    return tuple($name, trim($value));
-  }
-
   protected function resolveNestedVariables(string $value): string {
     if (strpos($value, '$') !== false) {
       $value = preg_replace_callback(
@@ -173,28 +129,16 @@ class Loader {
     return $value;
   }
 
-  protected function sanitiseVariableName(
-    string $name,
-    string $value
-  ): (string, string) {
-    $name = trim(str_replace(['export ', '\'', '"'], '', $name));
-    return tuple($name, $value);
-  }
-
-  protected function beginsWithAQuote(string $value): bool {
-    return $value === '"' || $value === '\'';
-  }
-
   public function getEnvironmentVariable(string $name): ?string {
-    $value = \getenv($name);
+    $value = getenv($name);
     return $value === false ? null : $value;
   }
 
   public function setEnvironmentVariable(string $name, string $value = ''): void {
     list($name, $value) = $this->normaliseEnvironmentVariable($name, $value);
-    $this->variableNames->add($name);
+    $this->vn->add($name);
 
-    if ($this->immutable && $this->getEnvironmentVariable($name) !== null) {
+    if ($this->imm && $this->getEnvironmentVariable($name) !== null) {
       return;
     }
     if (function_exists('putenv')) {
@@ -203,7 +147,7 @@ class Loader {
   }
 
   public function clearEnvironmentVariable(string $name): void {
-    if ($this->immutable) {
+    if ($this->imm) {
       return;
     }
     if (function_exists('putenv')) {
@@ -212,6 +156,6 @@ class Loader {
   }
 
   public function variableVec(): Vector<string> {
-    return $this->variableNames;
+    return $this->vn;
   }
 }
