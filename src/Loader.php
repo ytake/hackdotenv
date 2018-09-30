@@ -141,18 +141,14 @@ class Loader {
     if ($this->imm && $this->getEnvironmentVariable($name) !== null) {
       return;
     }
-    if (function_exists('putenv')) {
-      putenv("$name=$value");
-    }
+    putenv("$name=$value");
   }
 
   public function clearEnvironmentVariable(string $name): void {
     if ($this->imm) {
       return;
     }
-    if (function_exists('putenv')) {
-      putenv($name);
-    }
+    putenv($name);
   }
 
   public function variableVec(): Vector<string> {
