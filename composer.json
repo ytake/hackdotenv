@@ -18,7 +18,8 @@
   ],
   "require": {
     "hhvm": ">=3.28.0",
-    "hhvm/hhvm-autoload": "^1.6"
+    "hhvm/hhvm-autoload": "^1.6",
+    "hhvm/hsl": "^3.28"
   },
   "require-dev": {
     "hhvm/hacktest": "^1.0",

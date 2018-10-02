@@ -69,9 +69,9 @@ final class LoaderTest extends HackTest {
     $k = $this->key();
     $v = $this->value();
     if ($k is string && $v is string) {
-      $loader->setEnvironmentVariable($k, $v);
-      $loader->clearEnvironmentVariable($k);
-      expect($loader->getEnvironmentVariable($k))->toBeNull();
+      $loader->setEnvVariable($k, $v);
+      $loader->clearEnvVariable($k);
+      expect($loader->getEnvVariable($k))->toBeNull();
       expect(getenv($this->key()))->toBeFalse();
       expect($loader->variableVec())->toBeInstanceOf(Vector::class);
       expect($loader->variableVec())->toNotBeSame(0);
@@ -96,9 +96,9 @@ final class LoaderTest extends HackTest {
     $k = $this->key();
     $v = $this->value();
     if ($k is string && $v is string) {
-      $immLoader->setEnvironmentVariable($k, $v);
-      $immLoader->clearEnvironmentVariable($k);
-      expect($immLoader->getEnvironmentVariable($k))->toBeSame($v);
+      $immLoader->setEnvVariable($k, $v);
+      $immLoader->clearEnvVariable($k);
+      expect($immLoader->getEnvVariable($k))->toBeSame($v);
       expect(getenv($k))->toBeSame($v);
       expect($immLoader->variableVec())->toBeInstanceOf(Vector::class);
       expect($immLoader->variableVec())->toNotBeSame(0);
