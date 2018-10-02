@@ -2,15 +2,17 @@
 
 namespace Ytake\Dotenv;
 
-use function getenv;
-use function strtolower;
+use namespace HH\Lib\Str;
 
+use function getenv;
+
+<<__Rx>>
 function env(string $key, ?string $default = null): mixed {
   $value = getenv($key);
   if ($value === false) {
     return $default;
   }
-  switch (strtolower($value)) {
+  switch (Str\lowercase($value)) {
     case 'true':
       return true;
     case 'false':

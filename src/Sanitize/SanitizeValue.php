@@ -3,11 +3,9 @@
 namespace Ytake\Dotenv\Sanitize;
 
 use type Ytake\Dotenv\Exception\InvalidFileException;
-use function trim;
-use function sprintf;
+
+use namespace HH\Lib\{Str};
 use function preg_replace;
-use function str_replace;
-use function explode;
 use function preg_match;
 use function strpos;
 use function mb_substr;
@@ -18,13 +16,13 @@ class SanitizeValue implements SanitizeInterface {
     string $name,
     string $value
   ): (string, string) {
-    $value = trim($value);
+    $value = Str\trim($value);
     if (!$value) {
       return tuple($name, $value);
     }
     if ($this->isQuote($value)) {
       $quote = $this->firstChar($value);
-      $regexPattern = sprintf(
+      $regexPattern = Str\format(
         '/^
         %s           # match a quote at the start of the value
           (              # capturing sub-pattern used
@@ -43,24 +41,26 @@ class SanitizeValue implements SanitizeInterface {
         $quote
       );
       $value = preg_replace($regexPattern, '$1', $value);
-      $value = str_replace("\\$quote", $quote, $value);
-      return tuple($name, str_replace('\\\\', '\\', $value));
+      $value = Str\replace($value, "\\$quote", $quote);
+      return tuple($name, Str\replace($value, '\\\\', '\\'));
     }
-    $parts = explode(' #', $value, 2);
-    $value = trim($parts[0]);
+    $p = Str\split($value, ' #', 2);
+    $value = Str\trim($p[0]);
     if (preg_match('/\s+/', $value) > 0) {
       if (preg_match('/^#/', $value) === 0) {
         throw new InvalidFileException('values containing spaces must be surrounded by quotes.');
       }
       $value = '';
     }
-    return tuple($name, trim($value));
+    return tuple($name, Str\trim($value));
   }
 
+  <<__Rx>>
   protected function isQuote(string $value): bool {
     return strpos($value, '"') === 0 || strpos($value, '\'');
   }
 
+  <<__Rx>>
   protected function firstChar(string $value): string {
     return mb_substr($value, 0, 1);
   }
