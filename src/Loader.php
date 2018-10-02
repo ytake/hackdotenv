@@ -21,7 +21,6 @@ use function trim;
 use function strval;
 use function getenv;
 use function preg_replace_callback;
-use function function_exists;
 use function putenv;
 
 use const FILE_IGNORE_NEW_LINES;
@@ -30,6 +29,7 @@ use const FILE_SKIP_EMPTY_LINES;
 class Loader {
 
   protected Vector<string> $vn = Vector{};
+  protected Map<string, string> $m = Map{};
   protected bool $imm = false;
 
   public function __construct(
@@ -51,8 +51,7 @@ class Loader {
 
   public function load(): ImmMap<int, string> {
     $this->ensureFileIsReadable();
-    $filePath = $this->filePath;
-    $lines = $this->readLinesFromFile($filePath);
+    $lines = $this->readLinesFromFile($this->filePath);
     foreach ($lines as $line) {
       if (!$this->isComment($line) && $this->looksLikeSetter($line)) {
         $this->setEnvironmentVariable($line);
@@ -75,7 +74,7 @@ class Loader {
   }
 
   public function processFilters(string $name, string $value): (string, string) {
-    list($name, $value) = $this->splitCompoundStringIntoParts($name, $value);
+    list($name, $value) = $this->split($name, $value);
     list($name, $value) = $this->sn->sanitize($name, $value);
     list($name, $value) = $this->sv->sanitize($name, $value);
 
@@ -102,12 +101,12 @@ class Loader {
     return strpos($line, '=') !== false;
   }
 
-  protected function splitCompoundStringIntoParts(string $name, string $value): (string, string) {
+  protected function split(string $name, string $value): (string, string) {
     if (strpos($name, '=') !== false) {
       $im = new ImmMap(explode('=', $name, 2));
       $a = $im->map(($v) ==> trim($v));
-      $name = $a->firstKey();
-      $value = $a->firstValue();
+      $name = $a->get(0);
+      $value = $a->get(1);
     }
     return tuple(strval($name), strval($value));
   }
@@ -141,6 +140,7 @@ class Loader {
     if ($this->imm && $this->getEnvironmentVariable($name) !== null) {
       return;
     }
+    $this->m->add(Pair{$name, $value});
     putenv("$name=$value");
   }
 
@@ -148,10 +148,17 @@ class Loader {
     if ($this->imm) {
       return;
     }
+    $this->m->remove($name);
     putenv($name);
   }
 
+  <<__Memoize>>
   public function variableVec(): Vector<string> {
     return $this->vn;
+  }
+
+  <<__Memoize>>
+  public function envMap(): Map<string, string> {
+    return $this->m;
   }
 }

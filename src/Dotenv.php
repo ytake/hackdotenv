@@ -53,7 +53,7 @@ class Dotenv {
     return $this->loader->setImmutable(!$overload)->load();
   }
 
-  public function getEnvironmentVariableNames(): Vector<string> {
+  public function getEnvVarNames(): Vector<string> {
     return $this->loader->variableVec();
   }
 }

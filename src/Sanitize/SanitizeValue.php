@@ -9,6 +9,8 @@ use function preg_replace;
 use function str_replace;
 use function explode;
 use function preg_match;
+use function strpos;
+use function mb_substr;
 
 class SanitizeValue implements SanitizeInterface {
 
@@ -21,7 +23,7 @@ class SanitizeValue implements SanitizeInterface {
       return tuple($name, $value);
     }
     if ($this->isQuote($value)) {
-      $quote = $value;
+      $quote = $this->firstChar($value);
       $regexPattern = sprintf(
         '/^
         %s           # match a quote at the start of the value
@@ -47,15 +49,19 @@ class SanitizeValue implements SanitizeInterface {
     $parts = explode(' #', $value, 2);
     $value = trim($parts[0]);
     if (preg_match('/\s+/', $value) > 0) {
-      if (preg_match('/^#/', $value) > 0) {
-        $value = '';
+      if (preg_match('/^#/', $value) === 0) {
+        throw new InvalidFileException('values containing spaces must be surrounded by quotes.');
       }
-      throw new InvalidFileException('values containing spaces must be surrounded by quotes.');
+      $value = '';
     }
     return tuple($name, trim($value));
   }
 
   protected function isQuote(string $value): bool {
-    return $value === '"' || $value === '\'';
+    return strpos($value, '"') === 0 || strpos($value, '\'');
+  }
+
+  protected function firstChar(string $value): string {
+    return mb_substr($value, 0, 1);
   }
 }

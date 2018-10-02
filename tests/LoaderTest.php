@@ -19,7 +19,7 @@ final class LoaderTest extends HackTest {
 
   <<__Override>>
   public async function beforeEachTestAsync(): Awaitable<void> {
-    $folder = dirname(__DIR__) . '/resources';
+    $folder = dirname(__DIR__) . '/tests/resources';
     $this->keyVal(true);
     $this->mutableLoader = $this->muLoader($folder);
     $this->immutableLoader = $this->immLoader($folder);
