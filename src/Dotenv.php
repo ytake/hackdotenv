@@ -2,12 +2,12 @@
 
 namespace Ytake\Dotenv;
 
-use namespace HH\Lib\Str;
 use type Ytake\Dotenv\Exception\InvalidPathException;
 use type Ytake\Dotenv\Sanitize\SanitizeName;
 use type Ytake\Dotenv\Sanitize\SanitizeValue;
 
 use const DIRECTORY_SEPARATOR;
+use function rtrim;
 
 <<__ConsistentConstruct>>
 class Dotenv {
@@ -43,7 +43,7 @@ class Dotenv {
   }
 
   private function getFilePath(string $path, string $file): string {
-    return Str\trim_right($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file;
+    return rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file;
   }
 
   protected function loadData(

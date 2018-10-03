@@ -2,8 +2,7 @@
 
 namespace Ytake\Dotenv\Sanitize;
 
-use namespace HH\Lib\Str;
-
+use function trim;
 use function str_replace;
 
 class SanitizeName implements SanitizeInterface {
@@ -12,7 +11,7 @@ class SanitizeName implements SanitizeInterface {
     string $name,
     string $value
   ): (string, string) {
-    $name = Str\trim(str_replace(['export ', '\'', '"'], '', $name));
+    $name = trim(str_replace(['export ', '\'', '"'], '', $name));
     return tuple($name, $value);
   }
 }

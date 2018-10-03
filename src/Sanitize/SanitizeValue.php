@@ -4,11 +4,14 @@ namespace Ytake\Dotenv\Sanitize;
 
 use type Ytake\Dotenv\Exception\InvalidFileException;
 
-use namespace HH\Lib\{Str};
+use function explode;
 use function preg_replace;
 use function preg_match;
 use function strpos;
+use function trim;
 use function mb_substr;
+use function sprintf;
+use function str_replace;
 
 class SanitizeValue implements SanitizeInterface {
 
@@ -16,13 +19,13 @@ class SanitizeValue implements SanitizeInterface {
     string $name,
     string $value
   ): (string, string) {
-    $value = Str\trim($value);
+    $value = trim($value);
     if (!$value) {
       return tuple($name, $value);
     }
     if ($this->isQuote($value)) {
       $quote = $this->firstChar($value);
-      $regexPattern = Str\format(
+      $reg = sprintf(
         '/^
         %s           # match a quote at the start of the value
           (              # capturing sub-pattern used
@@ -40,27 +43,26 @@ class SanitizeValue implements SanitizeInterface {
         $quote,
         $quote
       );
-      $value = preg_replace($regexPattern, '$1', $value);
-      $value = Str\replace($value, "\\$quote", $quote);
-      return tuple($name, Str\replace($value, '\\\\', '\\'));
+      $value = preg_replace($reg, '$1', $value)
+      |> str_replace("\\$quote", $quote, $$)
+      |> str_replace('\\\\', '\\', $$);
+      return tuple($name, $value);
     }
-    $p = Str\split($value, ' #', 2);
-    $value = Str\trim($p[0]);
+    $p = explode(' #', $value, 2);
+    $value = trim($p[0]);
     if (preg_match('/\s+/', $value) > 0) {
       if (preg_match('/^#/', $value) === 0) {
         throw new InvalidFileException('values containing spaces must be surrounded by quotes.');
       }
       $value = '';
     }
-    return tuple($name, Str\trim($value));
+    return tuple($name, trim($value));
   }
 
-  <<__Rx>>
   protected function isQuote(string $value): bool {
     return strpos($value, '"') === 0 || strpos($value, '\'');
   }
 
-  <<__Rx>>
   protected function firstChar(string $value): string {
     return mb_substr($value, 0, 1);
   }

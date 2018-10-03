@@ -2,7 +2,7 @@
 
 namespace Ytake\Dotenv;
 
-use namespace HH\Lib\Str;
+use namespace HH\Lib\{Str, Vec};
 use type Ytake\Dotenv\Exception\InvalidPathException;
 use type Ytake\Dotenv\Sanitize\SanitizeName;
 use type Ytake\Dotenv\Sanitize\SanitizeValue;
@@ -48,11 +48,15 @@ class Loader {
   public function load(): ImmMap<int, string> {
     $this->ensure();
     $lines = $this->readFile($this->filePath);
-    foreach ($lines as $line) {
-      if (!$this->isComment($line) && $this->isAssign($line)) {
-        $this->setEnvVariable($line);
+    Vec\map(
+      Vec\filter(
+        $this->readFile($this->filePath),
+        ($row) ==> !$this->isComment($row) && $this->isAssign($row)
+      ),
+      ($v) ==> {
+        $this->setEnvVariable($v);
       }
-    }
+    );
     return new ImmMap($lines);
   }
 
@@ -64,30 +68,34 @@ class Loader {
     }
   }
 
+  <<__Rx>>
   protected function normalise(string $name, string $value): (string, string) {
     list($name, $value) = $this->processFilters($name, $value);
     return tuple($name, $this->resolveNestedVariables($value));
   }
 
+  <<__Rx>>
   public function processFilters(string $name, string $value): (string, string) {
-    list($name, $value) = $this->split($name, $value);
-    list($name, $value) = $this->sn->sanitize($name, $value);
-    list($name, $value) = $this->sv->sanitize($name, $value);
+    list($name, $value) = $this->split($name, $value)
+    |> $this->sn->sanitize($$[0], $$[1])
+    |> $this->sv->sanitize($$[0], $$[1]);
     return tuple($name, $value);
   }
 
-  protected function readFile(string $filePath): array<int, string> {
+  protected function readFile(string $filePath): vec<string> {
     $autodetect = ini_get('auto_detect_line_endings');
     ini_set('auto_detect_line_endings', '1');
     $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     ini_set('auto_detect_line_endings', $autodetect);
-    return $lines;
+    return vec($lines);
   }
 
+  <<__Rx>>
   protected function isComment(string $line): bool {
     return Str\starts_with(Str\trim_left($line), '#');
   }
 
+  <<__Rx>>
   protected function isAssign(string $line): bool {
     return strpos($line, '=') !== false;
   }
@@ -95,13 +103,16 @@ class Loader {
   <<__Rx>>
   protected function split(string $name, string $value): (string, string) {
     if (strpos($name, '=') !== false) {
-      $im = new ImmMap(Str\split($name, '=', 2));
-      $a = $im->map(($v) ==> Str\trim($v));
-      return tuple(strval($a->get(0)), strval($a->get(1)));
+      $a = Vec\map(
+        Str\split($name, '=', 2),
+        ($v) ==> Str\trim($v)
+      );
+      return tuple(strval($a[0]), strval($a[1]));
     }
     return tuple(strval($name), strval($value));
   }
 
+  <<__Rx>>
   protected function resolveNestedVariables(string $value): string {
     if (strpos($value, '$') !== false) {
       $value = preg_replace_callback(
@@ -119,15 +130,19 @@ class Loader {
     return $value;
   }
 
+  <<_Rx>>
   public function getEnvVariable(string $name): ?string {
     $value = getenv($name);
     return $value === false ? null : $value;
   }
 
-  public function setEnvVariable(string $name, string $value = ''): void {
+  <<_Rx>>
+  public function setEnvVariable(
+    string $name,
+    string $value = ''
+  ): void {
     list($name, $value) = $this->normalise($name, $value);
     $this->vn->add($name);
-
     if ($this->imm && $this->getEnvVariable($name) !== null) {
       return;
     }
@@ -143,12 +158,11 @@ class Loader {
     putenv($name);
   }
 
-  <<__Memoize>>
+
   public function variableVec(): Vector<string> {
     return $this->vn;
   }
 
-  <<__Memoize>>
   public function envMap(): Map<string, string> {
     return $this->m;
   }
