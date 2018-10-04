@@ -2,11 +2,13 @@
 
 namespace Ytake\Dotenv\Sanitize;
 
-use function trim;
+use namespace HH\Lib\Str;
+
 use function str_replace;
+use function trim;
 
 class SanitizeName implements SanitizeInterface {
-
+  
   public function sanitize(
     string $name,
     string $value
