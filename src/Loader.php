@@ -53,9 +53,7 @@ class Loader {
         $this->readFile($this->filePath),
         ($row) ==> !$this->isComment($row) && $this->isAssign($row)
       ),
-      ($v) ==> {
-        $this->setEnvVariable($v);
-      }
+      ($v) ==> $this->setEnvVariable($v)
     );
     return new ImmMap($lines);
   }
