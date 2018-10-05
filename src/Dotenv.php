@@ -23,7 +23,6 @@ class Dotenv {
       new SanitizeName(),
       new SanitizeValue()
     );
-    $this->loader->setImmutable(true);
   }
 
   public function load(): ImmMap<int, string> {
@@ -38,18 +37,12 @@ class Dotenv {
     }
   }
 
-  public function overload(): ImmMap<int, string> {
-    return $this->loadData(true);
-  }
-
   private function getFilePath(string $path, string $file): string {
     return rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file;
   }
 
-  protected function loadData(
-    bool $overload = false
-  ): ImmMap<int, string> {
-    return $this->loader->setImmutable(!$overload)->load();
+  protected function loadData(): ImmMap<int, string> {
+    return $this->loader->load();
   }
 
   public function getEnvVarNames(): Vector<string> {

@@ -26,7 +26,6 @@ class Loader {
 
   protected Vector<string> $vn = Vector{};
   protected Map<string, string> $m = Map{};
-  protected bool $imm = false;
 
   public function __construct(
     protected string $filePath,
@@ -34,23 +33,12 @@ class Loader {
     protected SanitizeValue $sv
   ) {}
 
-  public function setImmutable(
-    bool $immutable = false
-  ): this {
-    $this->imm = $immutable;
-    return $this;
-  }
-
-  public function getImmutable(): bool {
-    return $this->imm;
-  }
-
   public function load(): ImmMap<int, string> {
     $this->ensure();
     $lines = $this->readFile($this->filePath);
     Vec\map(
       Vec\filter(
-        $this->readFile($this->filePath),
+        $lines,
         ($row) ==> !$this->isComment($row) && $this->isAssign($row)
       ),
       ($v) ==> $this->setEnvVariable($v)
@@ -68,12 +56,12 @@ class Loader {
 
   <<__Rx>>
   protected function normalise(string $name, string $value): (string, string) {
-    list($name, $value) = $this->processFilters($name, $value);
+    list($name, $value) = $this->filters($name, $value);
     return tuple($name, $this->resolveNestedVariables($value));
   }
 
   <<__Rx>>
-  public function processFilters(string $name, string $value): (string, string) {
+  public function filters(string $name, string $value): (string, string) {
     list($name, $value) = $this->split($name, $value)
     |> $this->sn->sanitize($$[0], $$[1])
     |> $this->sv->sanitize($$[0], $$[1]);
@@ -135,27 +123,18 @@ class Loader {
   }
 
   <<_Rx>>
-  public function setEnvVariable(
+  protected function setEnvVariable(
     string $name,
     string $value = ''
   ): void {
     list($name, $value) = $this->normalise($name, $value);
     $this->vn->add($name);
-    if ($this->imm && $this->getEnvVariable($name) !== null) {
+    if ($this->getEnvVariable($name) !== null) {
       return;
     }
     $this->m->add(Pair{$name, $value});
     putenv("$name=$value");
   }
-
-  public function clearEnvVariable(string $name): void {
-    if ($this->imm) {
-      return;
-    }
-    $this->m->remove($name);
-    putenv($name);
-  }
-
 
   public function variableVec(): Vector<string> {
     return $this->vn;

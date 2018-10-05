@@ -12,9 +12,14 @@ final class DotenvTest extends HackTest {
 
   private ?string $dir;
 
+  private Vector<string> $v = Vector{
+    'FOO', 'BAR', 'INT', 'SPACED', 'NULL', 'IMMUTABLE'
+  };
+
   <<__Override>>
   public async function beforeEachTestAsync(): Awaitable<void> {
     $this->dir = dirname(__DIR__) . '/tests/resources';
+    $this->v->map(($v) ==> putenv($v));
   }
 
   <<ExpectedException(InvalidPathException::class)>>
@@ -45,28 +50,6 @@ final class DotenvTest extends HackTest {
     $dotenv = new Dotenv($this->dir, 'imm.env');
     $dotenv->load();
     expect(getenv('IMMUTABLE'))->toBeSame('true');
-  }
-
-  public function testShouldLoadAfterOverload(): void {
-    putenv('IMMUTABLE=true');
-    invariant($this->dir is string, "error");
-    $dotenv = new Dotenv($this->dir, 'imm.env');
-    $dotenv->overload();
-    expect(getenv('IMMUTABLE'))->toBeSame('false');
-    putenv('IMMUTABLE=true');
-    $dotenv->load();
-    expect(getenv('IMMUTABLE'))->toBeSame('true');
-  }
-
-  public function testShouldOverloadAfterLoad(): void {
-    putenv('IMMUTABLE=true');
-    invariant($this->dir is string, "error");
-    $dotenv = new Dotenv($this->dir, 'imm.env');
-    $dotenv->load();
-    expect(getenv('IMMUTABLE'))->toBeSame('true');
-    putenv('IMMUTABLE=true');
-    $dotenv->overload();
-    expect(getenv('IMMUTABLE'))->toBeSame('false');
   }
 
   public function testShouldGetEnvList(): void {

@@ -11,8 +11,6 @@ use function Facebook\FBExpect\expect;
 
 final class LoaderTest extends HackTest {
 
-  private ?Loader $immutableLoader;
-
   private ?Loader $mutableLoader;
 
   protected Map<string, string> $keyVal = Map{};
@@ -22,17 +20,10 @@ final class LoaderTest extends HackTest {
     $folder = dirname(__DIR__) . '/tests/resources';
     $this->keyVal(true);
     $this->mutableLoader = $this->muLoader($folder);
-    $this->immutableLoader = $this->immLoader($folder);
   }
 
   private function muLoader(string $folder): Loader {
     return new Loader($folder, new SanitizeName(), new SanitizeValue());
-  }
-
-  private function immLoader(string $folder): Loader {
-    $l = new Loader($folder, new SanitizeName(), new SanitizeValue());
-    $l->setImmutable(true);
-    return $l;
   }
 
   protected function keyVal(bool $reset = false): Map<string, string> {
@@ -52,56 +43,16 @@ final class LoaderTest extends HackTest {
     return $keyVal->firstValue();
   }
 
-  public function testMutableLoaderSetUnsetImmutable(): void {
-    $loader = $this->mutableLoader;
-    invariant($loader instanceof Loader, 'error');
-    $immutable = $loader->getImmutable();
-    $loader->setImmutable(true);
-    $loader->setImmutable(!$immutable);
-    expect($loader->getImmutable())->toBeSame(!$immutable);
-    $loader->setImmutable($immutable);
-    expect($loader->getImmutable())->toBeSame($immutable);
-  }
-
   public function testMutableLoaderClearsEnvironmentVars(): void {
     $loader = $this->mutableLoader;
     invariant($loader instanceof Loader, 'error');
     $k = $this->key();
     $v = $this->value();
     if ($k is string && $v is string) {
-      $loader->setEnvVariable($k, $v);
-      $loader->clearEnvVariable($k);
       expect($loader->getEnvVariable($k))->toBeNull();
       expect(getenv($this->key()))->toBeFalse();
       expect($loader->variableVec())->toBeInstanceOf(Vector::class);
       expect($loader->variableVec())->toNotBeSame(0);
-    }
-  }
-
-  public function testImmutableLoaderSetUnsetImmutable(): void {
-    $loader = $this->mutableLoader;
-    invariant($loader instanceof Loader, 'error');
-    $immutable = $loader->getImmutable();
-    $immLoader = $this->immutableLoader;
-    invariant($immLoader instanceof Loader, 'error');
-    $immLoader->setImmutable(!$immutable);
-    expect($immLoader->getImmutable())->toBeSame(!$immutable);
-    $immLoader->setImmutable($immutable);
-    expect($immLoader->getImmutable())->toBeSame($immutable);
-  }
-
-  public function testImmutableLoaderCannotClearEnvironmentVars(): void {
-    $immLoader = $this->immutableLoader;
-    invariant($immLoader instanceof Loader, 'error');
-    $k = $this->key();
-    $v = $this->value();
-    if ($k is string && $v is string) {
-      $immLoader->setEnvVariable($k, $v);
-      $immLoader->clearEnvVariable($k);
-      expect($immLoader->getEnvVariable($k))->toBeSame($v);
-      expect(getenv($k))->toBeSame($v);
-      expect($immLoader->variableVec())->toBeInstanceOf(Vector::class);
-      expect($immLoader->variableVec())->toNotBeSame(0);
     }
   }
 }
