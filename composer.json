@@ -1,6 +1,6 @@
 {
   "name": "ytake/hackdotenv",
-  "description": "",
+  "description": "Loads environment variables from .env to getenv()",
   "minimum-stability": "stable",
   "type": "library",
   "license": "MIT",
@@ -35,8 +35,5 @@
     "classmap": [
       "tests/"
     ]
-  },
-  "scripts": {
-    "test": "./vendor/bin/phpunit"
   }
 }
