@@ -28,12 +28,6 @@ final class DotenvTest extends HackTest {
     $dotenv->load();
   }
 
-  public function testShouldBeEmptyMapIfThrowInvalidPathException(): void{
-    $dotenv = new Dotenv(__DIR__);
-    expect($dotenv->safeLoad())->toBeInstanceOf(ImmMap::class);
-    expect($dotenv->safeLoad()->count())->toBeSame(0);
-  }
-
   public function testDotenvLoadsEnvironmentVars(): void {
     invariant($this->dir is string, "error");
     $dotenv = new Dotenv($this->dir);

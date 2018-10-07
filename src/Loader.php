@@ -33,17 +33,15 @@ class Loader {
     protected SanitizeValue $sv
   ) {}
 
-  public function load(): ImmMap<int, string> {
+  public function load(): void {
     $this->ensure();
-    $lines = $this->readFile($this->filePath);
     Vec\map(
       Vec\filter(
-        $lines,
+        $this->readFile($this->filePath),
         ($row) ==> !$this->isComment($row) && $this->isAssign($row)
       ),
       ($v) ==> $this->setEnvVariable($v)
     );
-    return new ImmMap($lines);
   }
 
   protected function ensure(): void {
@@ -54,13 +52,11 @@ class Loader {
     }
   }
 
-  <<__Rx>>
   protected function normalise(string $name, string $value): (string, string) {
     list($name, $value) = $this->filters($name, $value);
     return tuple($name, $this->resolveNestedVariables($value));
   }
 
-  <<__Rx>>
   public function filters(string $name, string $value): (string, string) {
     list($name, $value) = $this->split($name, $value)
     |> $this->sn->sanitize($$[0], $$[1])
@@ -86,7 +82,6 @@ class Loader {
     return strpos($line, '=') !== false;
   }
 
-  <<__Rx>>
   protected function split(string $name, string $value): (string, string) {
     if (strpos($name, '=') !== false) {
       $a = Vec\map(
@@ -98,7 +93,6 @@ class Loader {
     return tuple(strval($name), strval($value));
   }
 
-  <<__Rx>>
   protected function resolveNestedVariables(string $value): string {
     if (strpos($value, '$') !== false) {
       $value = preg_replace_callback(
@@ -136,10 +130,12 @@ class Loader {
     putenv("$name=$value");
   }
 
+  <<__Rx>>
   public function variableVec(): Vector<string> {
     return $this->vn;
   }
 
+  <<__Rx>>
   public function envMap(): Map<string, string> {
     return $this->m;
   }

@@ -7,7 +7,6 @@ use function str_replace;
 
 class SanitizeName implements SanitizeInterface {
 
-  <<__Rx>>
   public function sanitize(
     string $name,
     string $value

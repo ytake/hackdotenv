@@ -12,7 +12,6 @@ use function mb_substr;
 
 class SanitizeValue implements SanitizeInterface {
 
-  <<__Rx>>
   public function sanitize(
     string $name,
     string $value
@@ -64,6 +63,7 @@ class SanitizeValue implements SanitizeInterface {
 
   <<__Rx>>
   protected function firstChar(string $value): string {
+    /* HH_IGNORE_ERROR[4200] Non-reactive: unused optional byref argument */
     return mb_substr($value, 0, 1);
   }
 }
