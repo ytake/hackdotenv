@@ -3,7 +3,7 @@
 namespace Ytake\Dotenv\Sanitize;
 
 use type Ytake\Dotenv\Exception\InvalidFileException;
-use namespace HH\Lib\{Str};
+use namespace HH\Lib\{Str, Regex};
 
 use function preg_replace;
 use function preg_match;
@@ -47,8 +47,8 @@ class SanitizeValue implements SanitizeInterface {
     }
     $p = Str\split($value, ' #', 2);
     $value = Str\trim($p[0]);
-    if (preg_match('/\s+/', $value) > 0) {
-      if (preg_match('/^#/', $value) === 0) {
+    if (Regex\matches($value, re"/\s+/")) {
+      if (!Regex\matches($value, re"/^#/")) {
         throw new InvalidFileException('values containing spaces must be surrounded by quotes.');
       }
       $value = '';
