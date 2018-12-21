@@ -2,6 +2,7 @@
 
 namespace Ytake\Dotenv\Sanitize;
 
+<<__Sealed(SanitizeName::class, SanitizeValue::class)>>
 interface SanitizeInterface {
 
   public function sanitize(
