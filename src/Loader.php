@@ -35,13 +35,13 @@ class Loader {
 
   public function load(): void {
     $this->ensure();
-    Vec\map(
-      Vec\filter(
+    $rows = Vec\filter(
         $this->readFile($this->filePath),
         ($row) ==> !$this->isComment($row) && $this->isAssign($row)
-      ),
-      ($v) ==> $this->setEnvVariable($v)
     );
+    foreach($rows as $row) {
+      $this->setEnvVariable($row);
+    }
   }
 
   protected function ensure(): void {
