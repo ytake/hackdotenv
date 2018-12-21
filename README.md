@@ -4,6 +4,8 @@ Loads environment variables from .env to getenv().
 
 [![Build Status](https://travis-ci.org/ytake/hackdotenv.svg?branch=master)](https://travis-ci.org/ytake/hackdotenv)
 
+[m1/Env](https://github.com/m1/Env) converted for Hack
+
 **require HHVM >=3.28**
 
 ## Install
