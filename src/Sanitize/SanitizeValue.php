@@ -61,9 +61,7 @@ class SanitizeValue implements SanitizeInterface {
     return strpos($value, '"') === 0 || strpos($value, '\'');
   }
 
-  <<__Rx>>
   protected function firstChar(string $value): string {
-    /* HH_IGNORE_ERROR[4200] Non-reactive: unused optional byref argument */
     return mb_substr($value, 0, 1);
   }
 }
