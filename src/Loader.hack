@@ -1,5 +1,3 @@
-<?hh // strict
-
 namespace Ytake\Dotenv;
 
 use namespace HH\Lib\{Str, Vec};
@@ -110,13 +108,11 @@ class Loader {
     return $value;
   }
 
-  <<_Rx>>
   public function getEnvVariable(string $name): ?string {
     $value = getenv($name);
     return $value === false ? null : $value;
   }
 
-  <<_Rx>>
   protected function setEnvVariable(
     string $name,
     string $value = ''
@@ -127,7 +123,7 @@ class Loader {
       return;
     }
     $this->m->add(Pair{$name, $value});
-    putenv("$name=$value");
+    putenv($name."=".$value);
   }
 
   <<__Rx>>

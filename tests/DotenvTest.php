@@ -22,10 +22,10 @@ final class DotenvTest extends HackTest {
     $this->v->map(($v) ==> putenv($v));
   }
 
-  <<ExpectedException(InvalidPathException::class)>>
   public function testShouldThrowInvalidPathException(): void {
     $dotenv = new Dotenv(__DIR__);
-    $dotenv->load();
+    expect(() ==> $dotenv->load())
+      ->toThrow(InvalidPathException::class);
   }
 
   public function testDotenvLoadsEnvironmentVars(): void {

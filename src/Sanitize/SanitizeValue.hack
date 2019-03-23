@@ -1,10 +1,7 @@
-<?hh // strict
-
 namespace Ytake\Dotenv\Sanitize;
 
 use type Ytake\Dotenv\Exception\InvalidFileException;
 use namespace HH\Lib\{Str, Regex};
-
 use function preg_replace;
 use function preg_match;
 use function strpos;
@@ -17,7 +14,7 @@ class SanitizeValue implements SanitizeInterface {
     string $value
   ): (string, string) {
     $value = Str\trim($value);
-    if (!$value) {
+    if (Str\is_empty($value)) {
       return tuple($name, $value);
     }
     if ($this->isQuote($value)) {
@@ -41,7 +38,7 @@ class SanitizeValue implements SanitizeInterface {
         $quote
       );
       $value = preg_replace($reg, '$1', $value)
-      |> Str\replace($$, "\\$quote", $quote)
+      |> Str\replace($$, "\\".$quote, $quote)
       |> Str\replace($$, '\\\\', '\\');
       return tuple($name, $value);
     }

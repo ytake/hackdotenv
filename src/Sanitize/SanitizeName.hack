@@ -1,5 +1,3 @@
-<?hh // strict
-
 namespace Ytake\Dotenv\Sanitize;
 
 use namespace HH\Lib\Str;

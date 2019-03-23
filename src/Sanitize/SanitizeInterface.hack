@@ -1,5 +1,3 @@
-<?hh // strict
-
 namespace Ytake\Dotenv\Sanitize;
 
 <<__Sealed(SanitizeName::class, SanitizeValue::class)>>

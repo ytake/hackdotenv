@@ -1,5 +1,3 @@
-<?hh // strict
-
 namespace Ytake\Dotenv;
 
 use namespace HH\Lib\Str;
