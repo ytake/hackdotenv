@@ -23,8 +23,7 @@ final class DotenvTest extends HackTest {
   }
 
   public function testShouldThrowInvalidPathException(): void {
-    $dotenv = new Dotenv(__DIR__);
-    expect(() ==> $dotenv->load())
+    expect(() ==> new Dotenv(__DIR__))
       ->toThrow(InvalidPathException::class);
   }
 
@@ -50,7 +49,7 @@ final class DotenvTest extends HackTest {
     invariant($this->dir is string, "error");
     $dotenv = new Dotenv($this->dir);
     $dotenv->load();
-    expect($dotenv->getEnvVarNames())->toBeInstanceOf(Vector::class);
+    expect($dotenv->getEnvVarNames() is vec<_>)->toBeTrue();
     expect($dotenv->getEnvVarNames())->toContain('FOO');
     expect($dotenv->getEnvVarNames())->toContain('BAR');
     expect($dotenv->getEnvVarNames())->toContain('INT');

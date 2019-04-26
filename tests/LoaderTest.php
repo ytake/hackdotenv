@@ -2,9 +2,8 @@
 
 use type Ytake\Dotenv\Loader;
 use type Facebook\HackTest\HackTest;
-use type Ytake\Dotenv\Sanitize\SanitizeName;
-use type Ytake\Dotenv\Sanitize\SanitizeValue;
-
+use namespace Ytake\Dotenv\Escape;
+use namespace HH\Lib\Experimental\Filesystem;
 use function dirname;
 use function getenv;
 use function Facebook\FBExpect\expect;
@@ -23,7 +22,11 @@ final class LoaderTest extends HackTest {
   }
 
   private function muLoader(string $folder): Loader {
-    return new Loader($folder, new SanitizeName(), new SanitizeValue());
+    return new Loader(
+      Filesystem\open_read_only_non_disposable($folder),
+      new Escape\ResolveName(),
+      new Escape\ResolveValue()
+    );
   }
 
   protected function keyVal(bool $reset = false): Map<string, string> {
@@ -52,7 +55,7 @@ final class LoaderTest extends HackTest {
       expect($loader->getEnvVariable($k))->toBeNull();
       /* HH_IGNORE_ERROR[4110] */
       expect(getenv($this->key()))->toBeFalse();
-      expect($loader->variableVec())->toBeInstanceOf(Vector::class);
+      expect($loader->variableVec() is vec<_>)->toBeTrue();
       expect($loader->variableVec())->toNotBeSame(0);
     }
   }

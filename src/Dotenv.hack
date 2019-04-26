@@ -1,10 +1,8 @@
 namespace Ytake\Dotenv;
 
 use namespace HH\Lib\Str;
-use type Ytake\Dotenv\Exception\InvalidPathException;
-use type Ytake\Dotenv\Sanitize\SanitizeName;
-use type Ytake\Dotenv\Sanitize\SanitizeValue;
-
+use namespace Ytake\Dotenv\Escape;
+use namespace HH\Lib\Experimental\Filesystem;
 use const DIRECTORY_SEPARATOR;
 
 <<__ConsistentConstruct>>
@@ -17,9 +15,9 @@ class Dotenv {
     string $file = '.env'
   ) {
     $this->loader = new Loader(
-      $this->getFilePath($path, $file),
-      new SanitizeName(),
-      new SanitizeValue()
+      $this->fileOpen($path, $file),
+      new Escape\ResolveName(),
+      new Escape\ResolveValue()
     );
   }
 
@@ -30,14 +28,22 @@ class Dotenv {
   public function safeLoad(): void {
     try {
       $this->loadData();
-    } catch (InvalidPathException $e) {
+    } catch (Exception\InvalidPathException $e) {
       return;
     }
   }
 
-  <<__Rx>>
-  private function getFilePath(string $path, string $file): string {
-    return Str\trim_right($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file;
+  private function fileOpen(
+    string $path,
+    string $file
+  ): Filesystem\FileReadHandle {
+    try {
+      return Filesystem\open_read_only_non_disposable(
+        Str\trim_right($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file
+      );
+    } catch(Filesystem\FileOpenException $e) {
+      throw new Exception\InvalidPathException($e->getMessage(), $e->getCode(), $e);
+    }
   }
 
   protected function loadData(): void {
@@ -45,7 +51,7 @@ class Dotenv {
   }
 
   <<__Rx>>
-  public function getEnvVarNames(): Vector<string> {
+  public function getEnvVarNames(): vec<string> {
     return $this->loader->variableVec();
   }
 }

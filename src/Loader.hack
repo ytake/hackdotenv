@@ -1,17 +1,9 @@
 namespace Ytake\Dotenv;
 
+use namespace HH\Lib\Experimental\Filesystem;
 use namespace HH\Lib\{Str, Vec};
-use type Ytake\Dotenv\Exception\InvalidPathException;
-use type Ytake\Dotenv\Sanitize\SanitizeName;
-use type Ytake\Dotenv\Sanitize\SanitizeValue;
+use namespace Ytake\Dotenv\Escape;
 
-use function is_readable;
-use function is_file;
-use function sprintf;
-use function ini_get;
-use function ini_set;
-use function file;
-use function strpos;
 use function strval;
 use function getenv;
 use function preg_replace_callback;
@@ -22,31 +14,22 @@ use const FILE_SKIP_EMPTY_LINES;
 
 class Loader {
 
-  protected Vector<string> $vn = Vector{};
-  protected Map<string, string> $m = Map{};
+  protected vec<string> $vn = vec[];
+  protected dict<string, string> $m = dict[];
 
   public function __construct(
-    protected string $filePath,
-    protected SanitizeName $sn,
-    protected SanitizeValue $sv
+    protected Filesystem\FileReadHandle $readHandle,
+    protected Escape\ResolveName $sn,
+    protected Escape\ResolveValue $sv
   ) {}
 
   public function load(): void {
-    $this->ensure();
     $rows = Vec\filter(
-        $this->readFile($this->filePath),
+        $this->read($this->readHandle),
         ($row) ==> !$this->isComment($row) && $this->isAssign($row)
     );
     foreach($rows as $row) {
       $this->setEnvVariable($row);
-    }
-  }
-
-  protected function ensure(): void {
-    if (!is_readable($this->filePath) || !is_file($this->filePath)) {
-      throw new InvalidPathException(
-        sprintf('Unable to read the environment file at %s.', $this->filePath)
-      );
     }
   }
 
@@ -57,17 +40,16 @@ class Loader {
 
   public function filters(string $name, string $value): (string, string) {
     list($name, $value) = $this->split($name, $value)
-    |> $this->sn->sanitize($$[0], $$[1])
-    |> $this->sv->sanitize($$[0], $$[1]);
+    |> $this->sn->resolve($$[0], $$[1])
+    |> $this->sv->resolve($$[0], $$[1]);
     return tuple($name, $value);
   }
 
-  protected function readFile(string $filePath): vec<string> {
-    $autodetect = ini_get('auto_detect_line_endings');
-    ini_set('auto_detect_line_endings', '1');
-    $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    ini_set('auto_detect_line_endings', $autodetect);
-    return vec($lines);
+  protected function read(
+    Filesystem\FileReadHandle $readHandle
+  ): vec<string> {
+    $vm = Vec\map(Str\split($readHandle->rawReadBlocking(), "\n"), ($v) ==> Str\trim($v));
+    return Vec\filter($vm, ($k) ==> Str\length($k) !== 0);
   }
 
   <<__Rx>>
@@ -77,11 +59,11 @@ class Loader {
 
   <<__Rx>>
   protected function isAssign(string $line): bool {
-    return strpos($line, '=') !== false;
+    return Str\search($line, '=') is nonnull;
   }
 
   protected function split(string $name, string $value): (string, string) {
-    if (strpos($name, '=') !== false) {
+    if ($this->isAssign($name)) {
       $a = Vec\map(
         Str\split($name, '=', 2),
         ($v) ==> Str\trim($v)
@@ -92,7 +74,7 @@ class Loader {
   }
 
   protected function resolveNestedVariables(string $value): string {
-    if (strpos($value, '$') !== false) {
+    if (Str\search($value, '$') is nonnull) {
       $value = preg_replace_callback(
         '/\${([a-zA-Z0-9_.]+)}/',
         ($matchedPatterns) ==> {
@@ -118,21 +100,21 @@ class Loader {
     string $value = ''
   ): void {
     list($name, $value) = $this->normalise($name, $value);
-    $this->vn->add($name);
+    $this->vn[] = $name;
     if ($this->getEnvVariable($name) !== null) {
       return;
     }
-    $this->m->add(Pair{$name, $value});
+    $this->m[$name] = $value;
     putenv($name."=".$value);
   }
 
   <<__Rx>>
-  public function variableVec(): Vector<string> {
+  public function variableVec(): vec<string> {
     return $this->vn;
   }
 
   <<__Rx>>
-  public function envMap(): Map<string, string> {
+  public function envDict(): dict<string, string> {
     return $this->m;
   }
 }

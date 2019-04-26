@@ -1,15 +1,13 @@
-namespace Ytake\Dotenv\Sanitize;
+namespace Ytake\Dotenv\Escape;
 
 use type Ytake\Dotenv\Exception\InvalidFileException;
 use namespace HH\Lib\{Str, Regex};
 use function preg_replace;
-use function preg_match;
-use function strpos;
 use function mb_substr;
 
-class SanitizeValue implements SanitizeInterface {
+class ResolveValue implements EscapeInterface {
 
-  public function sanitize(
+  public function resolve(
     string $name,
     string $value
   ): (string, string) {
@@ -55,7 +53,7 @@ class SanitizeValue implements SanitizeInterface {
 
   <<__Rx>>
   protected function isQuote(string $value): bool {
-    return strpos($value, '"') === 0 || strpos($value, '\'');
+    return Str\search($value, '"') === 0 || Str\search($value, '\'') is nonnull;
   }
 
   protected function firstChar(string $value): string {
