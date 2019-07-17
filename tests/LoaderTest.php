@@ -52,11 +52,11 @@ final class LoaderTest extends HackTest {
     $k = $this->key();
     $v = $this->value();
     if ($k is string && $v is string) {
-      expect($loader->getEnvVariable($k))->toBeNull();
+      expect($loader?->getEnvVariable($k))->toBeNull();
       /* HH_IGNORE_ERROR[4110] */
       expect(getenv($this->key()))->toBeFalse();
-      expect($loader->variableVec() is vec<_>)->toBeTrue();
-      expect($loader->variableVec())->toNotBeSame(0);
+      expect($loader?->variableVec() is vec<_>)->toBeTrue();
+      expect($loader?->variableVec())->toNotBeSame(0);
     }
   }
 }
