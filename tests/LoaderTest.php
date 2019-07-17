@@ -10,16 +10,7 @@ use function Facebook\FBExpect\expect;
 
 final class LoaderTest extends HackTest {
 
-  private ?Loader $mutableLoader;
-
   protected Map<string, string> $keyVal = Map{};
-
-  <<__Override>>
-  public async function beforeEachTestAsync(): Awaitable<void> {
-    $folder = dirname(__DIR__) . '/tests/resources';
-    $this->keyVal(true);
-    $this->mutableLoader = $this->muLoader($folder);
-  }
 
   private function muLoader(string $folder): Loader {
     return new Loader(
@@ -47,16 +38,17 @@ final class LoaderTest extends HackTest {
   }
 
   public function testMutableLoaderClearsEnvironmentVars(): void {
-    $loader = $this->mutableLoader;
-    invariant($loader instanceof Loader, 'error');
+    $folder = dirname(__DIR__) . '/tests/resources';
+    $this->keyVal(true);
+    $loader = $this->muLoader($folder);
     $k = $this->key();
     $v = $this->value();
     if ($k is string && $v is string) {
-      expect($loader?->getEnvVariable($k))->toBeNull();
+      expect($loader->getEnvVariable($k))->toBeNull();
       /* HH_IGNORE_ERROR[4110] */
       expect(getenv($this->key()))->toBeFalse();
-      expect($loader?->variableVec() is vec<_>)->toBeTrue();
-      expect($loader?->variableVec())->toNotBeSame(0);
+      expect($loader->variableVec() is vec<_>)->toBeTrue();
+      expect($loader->variableVec())->toNotBeSame(0);
     }
   }
 }
