@@ -74,6 +74,7 @@ class Loader {
   }
 
   protected function resolveNestedVariables(string $value): string {
+    $count = null;
     if (Str\search($value, '$') is nonnull) {
       $value = preg_replace_callback(
         '/\${([a-zA-Z0-9_.]+)}/',
@@ -84,7 +85,9 @@ class Loader {
           }
           return $nestedVariable;
         },
-        $value
+        $value,
+        -1,
+        inout $count
       );
     }
     return $value;

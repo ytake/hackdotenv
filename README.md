@@ -6,7 +6,7 @@ Loads environment variables from .env to getenv().
 
 [vlucas/phpdotenv](https://github.com/vlucas/phpdotenv) converted for Hack
 
-**require HHVM >=3.28**
+**require HHVM >=4.20**
 
 ## Install
 

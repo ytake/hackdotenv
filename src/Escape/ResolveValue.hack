@@ -1,7 +1,7 @@
 namespace Ytake\Dotenv\Escape;
 
 use type Ytake\Dotenv\Exception\InvalidFileException;
-use namespace HH\Lib\{Str, Regex};
+use namespace HH\Lib\{Regex, Str};
 use function preg_replace;
 use function mb_substr;
 
