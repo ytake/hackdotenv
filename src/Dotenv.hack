@@ -1,8 +1,9 @@
 namespace Ytake\Dotenv;
 
+use type HH\Lib\Experimental\OS\NotFoundException;
 use namespace HH\Lib\Str;
 use namespace Ytake\Dotenv\Escape;
-use namespace HH\Lib\Experimental\Filesystem;
+use namespace HH\Lib\Experimental\File;
 use const DIRECTORY_SEPARATOR;
 
 <<__ConsistentConstruct>>
@@ -36,12 +37,12 @@ class Dotenv {
   private function fileOpen(
     string $path,
     string $file
-  ): Filesystem\FileReadHandle {
+  ): File\NonDisposableReadHandle {
     try {
-      return Filesystem\open_read_only_non_disposable(
+      return File\open_read_only_nd(
         Str\trim_right($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file
       );
-    } catch(Filesystem\FileOpenException $e) {
+    } catch(NotFoundException $e) {
       throw new Exception\InvalidPathException($e->getMessage(), $e->getCode(), $e);
     }
   }

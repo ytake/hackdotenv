@@ -1,6 +1,6 @@
 namespace Ytake\Dotenv;
 
-use namespace HH\Lib\Experimental\Filesystem;
+use namespace HH\Lib\Experimental\File;
 use namespace HH\Lib\{Str, Vec};
 use namespace Ytake\Dotenv\Escape;
 
@@ -18,7 +18,7 @@ class Loader {
   protected dict<string, string> $m = dict[];
 
   public function __construct(
-    protected Filesystem\FileReadHandle $readHandle,
+    protected File\NonDisposableReadHandle $readHandle,
     protected Escape\ResolveName $sn,
     protected Escape\ResolveValue $sv
   ) {}
@@ -46,7 +46,7 @@ class Loader {
   }
 
   protected function read(
-    Filesystem\FileReadHandle $readHandle
+    File\NonDisposableReadHandle $readHandle
   ): vec<string> {
     $vm = Vec\map(Str\split($readHandle->rawReadBlocking(), "\n"), ($v) ==> Str\trim($v));
     return Vec\filter($vm, ($k) ==> Str\length($k) !== 0);

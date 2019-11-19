@@ -1,5 +1,3 @@
-<?hh // strict
-
 use namespace Ytake\Dotenv;
 use type Facebook\HackTest\HackTest;
 

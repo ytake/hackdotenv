@@ -17,15 +17,15 @@
     }
   ],
   "require": {
-    "hhvm": "^4.20",
-    "hhvm/hsl": "^4.15",
-    "hhvm/hsl-experimental": "^4.15",
-    "hhvm/hhvm-autoload": "^2.0"
+    "hhvm": "^4.25",
+    "hhvm/hsl": "^4.0",
+    "hhvm/hsl-experimental": "^4.25",
+    "hhvm/hhvm-autoload": "^2.0.10"
   },
   "require-dev": {
-    "hhvm/hacktest": "^1.6",
-    "facebook/fbexpect": "^2.5.2",
-    "hhvm/hhast": "^4.0"
+    "hhvm/hacktest": "^2.0.0",
+    "facebook/fbexpect": "^2.7.3",
+    "hhvm/hhast": "^4.0.0"
   },
   "scripts": {
     "tests": [

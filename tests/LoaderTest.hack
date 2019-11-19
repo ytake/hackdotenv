@@ -1,9 +1,7 @@
-<?hh // strict
-
 use type Ytake\Dotenv\Loader;
 use type Facebook\HackTest\HackTest;
 use namespace Ytake\Dotenv\Escape;
-use namespace HH\Lib\Experimental\Filesystem;
+use namespace HH\Lib\Experimental\File;
 use function dirname;
 use function getenv;
 use function Facebook\FBExpect\expect;
@@ -14,7 +12,7 @@ final class LoaderTest extends HackTest {
 
   private function muLoader(string $folder): Loader {
     return new Loader(
-      Filesystem\open_read_only_non_disposable($folder),
+      File\open_read_only_nd($folder),
       new Escape\ResolveName(),
       new Escape\ResolveValue()
     );
