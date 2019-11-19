@@ -1,5 +1,3 @@
-<?hh // strict
-
 use type Ytake\Dotenv\Dotenv;
 use type Facebook\HackTest\HackTest;
 use type Ytake\Dotenv\Exception\InvalidPathException;
