@@ -18,7 +18,7 @@ class Loader {
   protected dict<string, string> $m = dict[];
 
   public function __construct(
-    protected File\NonDisposableReadHandle $readHandle,
+    protected File\CloseableReadHandle $readHandle,
     protected Escape\ResolveName $sn,
     protected Escape\ResolveValue $sv
   ) {}
@@ -46,7 +46,7 @@ class Loader {
   }
 
   protected function read(
-    File\NonDisposableReadHandle $readHandle
+    File\CloseableReadHandle $readHandle
   ): vec<string> {
     $vm = Vec\map(Str\split($readHandle->rawReadBlocking(), "\n"), ($v) ==> Str\trim($v));
     return Vec\filter($vm, ($k) ==> Str\length($k) !== 0);

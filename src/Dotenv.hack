@@ -37,7 +37,7 @@ class Dotenv {
   private function fileOpen(
     string $path,
     string $file
-  ): File\NonDisposableReadHandle {
+  ): File\CloseableReadHandle {
     try {
       return File\open_read_only_nd(
         Str\trim_right($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file
