@@ -20,7 +20,7 @@ final class LoaderTest extends HackTest {
 
   protected function keyVal(bool $reset = false): Map<string, string> {
     if ($this->keyVal->count() !== 0 || $reset) {
-      $this->keyVal = new Map([uniqid() => uniqid()]);
+      $this->keyVal = new Map(dict[uniqid() => uniqid()]);
     }
     return $this->keyVal;
   }
