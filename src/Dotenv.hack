@@ -1,9 +1,9 @@
 namespace Ytake\Dotenv;
 
-use type HH\Lib\Experimental\OS\NotFoundException;
+use type HH\Lib\OS\NotFoundException;
 use namespace HH\Lib\Str;
 use namespace Ytake\Dotenv\Escape;
-use namespace HH\Lib\Experimental\File;
+use namespace HH\Lib\File;
 use const DIRECTORY_SEPARATOR;
 
 <<__ConsistentConstruct>>
