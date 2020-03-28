@@ -1,7 +1,6 @@
 namespace Ytake\Dotenv;
 
-use namespace HH\Lib\Experimental\File;
-use namespace HH\Lib\{Str, Vec};
+use namespace HH\Lib\{File, Str, Vec};
 use namespace Ytake\Dotenv\Escape;
 
 use function strval;

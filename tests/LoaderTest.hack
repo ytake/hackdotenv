@@ -1,7 +1,7 @@
 use type Ytake\Dotenv\Loader;
 use type Facebook\HackTest\HackTest;
 use namespace Ytake\Dotenv\Escape;
-use namespace HH\Lib\Experimental\File;
+use namespace HH\Lib\File;
 use function dirname;
 use function getenv;
 use function Facebook\FBExpect\expect;
