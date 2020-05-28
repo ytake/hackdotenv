@@ -22,9 +22,9 @@ class Loader {
     protected Escape\ResolveValue $sv
   ) {}
 
-  public function load(): void {
+  public async function loadAsync(): Awaitable<void> {
     $rows = Vec\filter(
-        $this->read($this->readHandle),
+        await $this->readAsync($this->readHandle),
         ($row) ==> !$this->isComment($row) && $this->isAssign($row)
     );
     foreach($rows as $row) {
@@ -44,10 +44,10 @@ class Loader {
     return tuple($name, $value);
   }
 
-  protected function read(
+  protected async function readAsync(
     File\CloseableReadHandle $readHandle
-  ): vec<string> {
-    $vm = Vec\map(Str\split($readHandle->rawReadBlocking(), "\n"), ($v) ==> Str\trim($v));
+  ): Awaitable<vec<string>> {
+    $vm = Vec\map(Str\split(await $readHandle->readAsync(), "\n"), ($v) ==> Str\trim($v));
     return Vec\filter($vm, ($k) ==> Str\length($k) !== 0);
   }
 

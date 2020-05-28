@@ -25,28 +25,28 @@ final class DotenvTest extends HackTest {
       ->toThrow(InvalidPathException::class);
   }
 
-  public function testDotenvLoadsEnvironmentVars(): void {
+  public async function testDotenvLoadsEnvironmentVars(): Awaitable<void> {
     invariant($this->dir is string, "error");
     $dotenv = new Dotenv($this->dir);
-    $dotenv->load();
+    await $dotenv->loadAsync();
     expect(getenv('FOO'))->toBeSame('bar');
     expect(getenv('BAR'))->toBeSame('baz');
     expect(getenv('SPACED'))->toBeSame('with spaces');
     expect(getenv('NULL'))->toBeEmpty();
   }
 
-  public function testShouldNotOverwriteEnv(): void {
+  public async function testShouldNotOverwriteEnv(): Awaitable<void> {
     putenv('IMMUTABLE=true');
     invariant($this->dir is string, "error");
     $dotenv = new Dotenv($this->dir, 'imm.env');
-    $dotenv->load();
+    await $dotenv->loadAsync();
     expect(getenv('IMMUTABLE'))->toBeSame('true');
   }
 
-  public function testShouldGetEnvList(): void {
+  public async function testShouldGetEnvList(): Awaitable<void> {
     invariant($this->dir is string, "error");
     $dotenv = new Dotenv($this->dir);
-    $dotenv->load();
+    await $dotenv->loadAsync();
     expect($dotenv->getEnvVarNames() is vec<_>)->toBeTrue();
     expect($dotenv->getEnvVarNames())->toContain('FOO');
     expect($dotenv->getEnvVarNames())->toContain('BAR');

@@ -22,13 +22,13 @@ class Dotenv {
     );
   }
 
-  public function load(): void {
-    $this->loadData();
+  public async function loadAsync(): Awaitable<void> {
+    await $this->loadDataAsync();
   }
 
-  public function safeLoad(): void {
+  public async function safeLoadAsync(): Awaitable<void> {
     try {
-      $this->loadData();
+      await $this->loadDataAsync();
     } catch (Exception\InvalidPathException $e) {
       return;
     }
@@ -47,8 +47,8 @@ class Dotenv {
     }
   }
 
-  protected function loadData(): void {
-    $this->loader->load();
+  protected async function loadDataAsync(): Awaitable<void> {
+    await $this->loader->loadAsync();
   }
 
   <<__Rx>>

@@ -10,10 +10,10 @@ final class EnvTest extends HackTest {
     $this->dir = dirname(__DIR__) . '/tests/resources';
   }
 
-  public function testShouldBeEnvValue(): void {
+  public async function testShouldBeEnvValue(): Awaitable<void> {
     invariant($this->dir is string, "error");
     $dotenv = new Dotenv\Dotenv($this->dir);
-    $dotenv->load();
+    await $dotenv->loadAsync();
     expect(Dotenv\env('FOO'))->toBeSame('bar');
     expect(Dotenv\env('BAR'))->toBeSame('baz');
     expect(Dotenv\env('SPACED'))->toBeSame('with spaces');

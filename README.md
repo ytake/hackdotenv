@@ -26,15 +26,13 @@ BAR=baz
 You can then load .env in your application.
 
 ```hack
-<?hh
 use type Ytake\Dotenv\Loader;
 
 $dotenv = new Dotenv($this->dir);
-$dotenv->load();
+await $dotenv->loadAsync();
 ```
 
 ```hack
-<?hh
 use namespace Ytake\Dotenv;
 
 Dot\env('FOO');
