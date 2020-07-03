@@ -12,7 +12,7 @@ final class LoaderTest extends HackTest {
 
   private function muLoader(string $folder): Loader {
     return new Loader(
-      File\open_read_only_nd($folder),
+      File\open_read_only($folder),
       new Escape\ResolveName(),
       new Escape\ResolveValue()
     );
