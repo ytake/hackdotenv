@@ -39,11 +39,11 @@ class Dotenv {
     string $file
   ): File\CloseableReadHandle {
     try {
-      return File\open_read_only_nd(
+      return File\open_read_only(
         Str\trim_right($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $file
       );
     } catch(NotFoundException $e) {
-      throw new Exception\InvalidPathException($e->getMessage(), $e->getCode(), $e);
+      throw new Exception\InvalidPathException($e->getMessage(), $e->getErrno(), $e);
     }
   }
 
